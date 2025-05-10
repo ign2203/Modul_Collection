@@ -40,7 +40,7 @@ public class Contact {
 
     @Override
     public String toString() {
-        return name + "|" + phone + "|" + email;
+        return name + "|" + phone + "|" + email + "|Группа " + group ;
     }
 
     public Contact(String name, String phone, String email, String group) {
