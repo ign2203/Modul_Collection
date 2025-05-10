@@ -8,13 +8,14 @@ import java.util.logging.Logger;
 public class ContactManager {
     private static final Logger logger = Logger.getLogger(ContactManager.class.getName());
     LinkedHashSet<Contact> contactsSet = new LinkedHashSet<>();
-    Map<String, List<Contact>> contactsByName = new HashMap<>();// библиотека, внутри которой находится List (список), чтобы в телефонной книге, была возможность иметь
+    Map<String, List<Contact>> contactsByName = new HashMap<>();// библиотека, внутри которой находится List (список), чтобы в телефонной книге, чтобы была возможность иметь
     // контакты с одинаковым именем, но разными значениями
     HashMap<String, Contact> phoneByName = new HashMap<>();// Библиотека, где номер это ключ(для поиска по номеру)
-    Map<String, List<Contact>> contactsByGroup = new HashMap<>();
+    Map<String, List<Contact>> contactsByGroup = new HashMap<>();// библиотека для вывода контактов по группам
 
 
-    public ContactManager() {
+    public ContactManager() {// создаем три отдельные группы для добавления контактов
+        // создание новые группы не реализовано
         contactsByGroup.put("семья", new ArrayList<>());
         contactsByGroup.put("работа", new ArrayList<>());
         contactsByGroup.put("друзья", new ArrayList<>());
@@ -22,7 +23,7 @@ public class ContactManager {
 
     public void listContact() { // метод для вывода всех контактов "кнопка 3"
         try {
-            this.checkBookIsEmpty();
+            this.checkBookIsEmpty();// метод на случай если пользователь попробует вывести  пустой каталог контактов
             logAndPrint(Level.INFO, "Выводим все контакты в телефонной книге");
             System.out.println("Список всех контактов:");
             for (Contact CONTACT : contactsSet) {
@@ -37,7 +38,7 @@ public class ContactManager {
     public void listContactsByGroup(String groupName) {// метод для вывода контактов по группам
         try {
             this.checkBookIsEmpty();// условия если у нас пользователь пытается вывести контакты, при пустом каталоге
-            if ((!contactsByGroup.containsKey(groupName))) { // если в коллекии нет содержимого такого же как и наши ключи, то выводим, что нет такой группы
+            if ((!contactsByGroup.containsKey(groupName))) { //если в коллекии нет содержимого такого же как и наши ключи, то выводим, что нет такой группы
                 //т.е. в коллекции проверяем contains Ключ и сраваниваем его с переменной group
                 logAndPrint(Level.WARNING, "Группа '" + groupName + "' не распознана.");
                 return;
@@ -53,9 +54,9 @@ public class ContactManager {
         }
     }
 
-    public void addContact(Contact CONTACT) { // в этом методе ошибка, так как при добавление контакта, он меняет группу всех контактов
-        // или сохраняет контакты во все группы, так как при просмотре контактов по группе, контакты имеются во всех группах
-        if (CONTACT == null) {// здесь мы говорим, если CONTACT пуст, то Нужен для того чтобы пользователь не ввел пустые значения
+    public void addContact(Contact CONTACT) { // метод для добавления контактов
+
+        if (CONTACT == null) {// создаем условие, если пользователь попытается при добавлении ничего не вводить
             logAndPrint(Level.SEVERE, "Попытка ввести контакт с нулевым значением");
             throw new IllegalStateException("Нельзя вводить null значением");// ловим ошибку
         }
@@ -63,33 +64,32 @@ public class ContactManager {
         String phoneKey = CONTACT.getPhone();// создаем переменные для добавления значений в коллекцию, нужны для актуального поиска и удаления
         String group = CONTACT.getGroup();//создаем переменную для возможности сохранения в отдельную коллекцию
 
-        if (contactsSet.contains(CONTACT)) { // как я понял contains отдельный метод првоерки дубликактов по переопределнным методам в Contact, но мое мнение
-            // данный метод актуален, если у нас не много контактов, лучше вообще ArrayList поменять на что-то другое, например HashSet, но не помню будет ли там вывод контактов сортирован по добавлению
-            // но это все равно лучше, если мы сравнивали длины двух коллекций
+        if (contactsSet.contains(CONTACT)) { // создаем условие, в котором contains отдельный метод проверки дублик актов. По переопределённым
+            // методам в Contact
             logAndPrint(Level.SEVERE, "Такой контакт уже существует!" + CONTACT);
             return;
         }
 
-        if ((contactsByGroup.get(group) == null)) { // если в коллекии нет содержимого такого же как и наши ключи, то выводим, что нет такой группы
-            //т.е. в коллекции проверяем contains Ключ и сраваниваем его с переменной group
+        if ((contactsByGroup.get(group) == null)) { // если в каллерии нет содержимого такого же как и наши ключи (групп), то выводим, что нет такой группы
+            //т.е. в коллекции проверяем contains Ключ и сравниваем его с переменной group
             logAndPrint(Level.WARNING, "Группа '" + group + "' не распознана. Контакт не добавлен в группу.");
             return;
         }
         logAndPrint(Level.INFO, "Успешное добавление контакта: " + CONTACT);
-        contactsSet.add(CONTACT);// добавляем контакт в arrayBook
+        contactsSet.add(CONTACT);// добавляем контакт
         contactsByName.putIfAbsent(nameKey, new ArrayList<>());// добавляем в коллекцию для имени
         contactsByName.get(nameKey).add(CONTACT);
         phoneByName.put(phoneKey, CONTACT);// добавляем в коллекцию для номера
-        contactsByGroup.get(group).add(CONTACT);//добавляем в коллекцию по группам (здесь трудно читать, но можно)
-        // мы добавляем CONTACT в в геттер group и в коллекцию contactsByGroup
+        contactsByGroup.get(group).add(CONTACT);//добавляем в коллекцию по группам
+        // мы добавляем CONTACT в  коллекцию contactsByGroup
     }
 
 
     public void removeContact(String phone) { // это объект phoneKey класса Contact
         try {
             this.checkBookIsEmpty();// метод на случай, если пользователь попытается удалить контакт при пустом каталоге
-            if (phone == null || phone.trim().isEmpty()) {// здесь ошибка, если значения нет в библиотеки, то программа ложится. Значит нужно поймать ошибку, через try
-                // а это условие оставляем,если пользователь вообще ничего не вводит
+            if (phone == null || phone.trim().isEmpty()) { // если строка вводимая пользователем пуста, trim метод, для удаления пробелов в строке (в начале и в конце)
+                //isEmpty() метод для проверки, пуста ли длина
                 logAndPrint(Level.SEVERE, "Попытка удалить  контакт с нулевым значением.");
                 System.out.println("Номер не может быть пустым.");
                 return;
@@ -97,7 +97,6 @@ public class ContactManager {
             if (!phoneByName.containsKey(phone)) {// пишем условие если ключ phoneKey не найден в библиотеке
                 logAndPrint(Level.WARNING, "Контакт с данным номером: " + phone + "' не найден.");
                 return;
-                // это условие у меня компилятор вообще не видит. Он ловит другое условие если номер null
             }
 
             Contact contact = phoneByName.get(phone);// зная номер, мы можем найти КОНТАКТ, создаем Объект contact с номером phoneKey
@@ -107,7 +106,7 @@ public class ContactManager {
             // то здесь мы хотим удалить контакт из библиотеки где ключ, является Именем
             List<Contact> groupList = contactsByGroup.get(contact.getGroup());// создаем groupList, и говорим что он равен contactsByGroup, и эта группа, нашего контакта
             if (groupList != null) {// если лист не пуст, то вызываем итератор, для правильного удаления
-                Iterator<Contact> iterator = groupList.iterator(); // итератор, по всем контактам , нашей группе
+                Iterator<Contact> iterator = groupList.iterator(); // итератор, по всем контактам  нашей группе
                 while (iterator.hasNext()) {//проходим каждый объект
                     Contact c = iterator.next();// каждый следующий объект будет равен c
                     if (c.equals(contact)) { // если с, это наш контакт,
@@ -123,24 +122,20 @@ public class ContactManager {
     }
 
     public void checkBookIsEmpty() { // Здесь мы написали метод, для дальнейшего упрощения. Чтобы у нас была возможность применить этот метод в других методах
-        // так как мы будем часто работать со значениями в книге
+        // так как мы будем часто работать со значениями в телефонной книге
         if (this.contactsSet.isEmpty()) {
             logAndPrint(Level.SEVERE, "Телефонная книга не была инициализирована");
             throw new IllegalStateException("Телефонная книга не была инициализирована");
         }
     }
 
-    public void searchByContactName(String name) { // метод для поиска контакта по имени "кнопка 4"
-        // этот метод нужно допилить, он выводит результаты только одного контакта , а если у меня есть нескольконтактов о с одинаковым именем,
-        // но разными номера и конкты находятся в разхных группах
-        // компилятор почему выводит только один контакт
-        //  я думаю дело в том, что библиотека с ключом не совсем корректно работает по имени
-        // так как при добавлении ключа в библиотеку, он просто меняет ключ и меняет контакт, и в библиотеки вместо нескольких контактов сохранен только один
+    public void searchByContactName(String name) { // метод для поиска контакта по имени
         try {
             this.checkBookIsEmpty();
             String nameKey = name.toLowerCase();
-            List<Contact> contacts = contactsByName.get(nameKey);
-            if (contacts != null && !contacts.isEmpty()) {
+            List<Contact> contacts = contactsByName.get(nameKey); //создаем список contacts, который равен списку контактов которые мы получаем по геттеру nameKey,
+            //который ввел ранее пользователь
+            if (contacts != null && !contacts.isEmpty()) {// создаем условие, если список не пуст и он вообще существует
                 logAndPrint(Level.INFO, "Найдено " + contacts.size() + " контактов с именем: " + name);
                 for (Contact c : contacts) {
                     System.out.println(c);
@@ -155,10 +150,8 @@ public class ContactManager {
 
     public void searchByContactPhone(String phone) { // метод для поиска контакта по номеру "кнопка 5"
         try {
-
-
             this.checkBookIsEmpty();
-            if (phoneByName.containsKey(phone)) {
+            if (phoneByName.containsKey(phone)) {//создаем условие, которое проверяем содержимое библиотеки phoneByName с помощью containsKey, по ключу который вводит пользователь
                 logAndPrint(Level.INFO, "Успешный поиск по номеру");
                 System.out.println(phoneByName.get(phone));
             } else {

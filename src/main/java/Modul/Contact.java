@@ -1,6 +1,6 @@
 package Modul;
 
-public class Contact {
+public class Contact {// в
     private String name;
     private String phone;
     private String email;
