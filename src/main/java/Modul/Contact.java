@@ -50,21 +50,5 @@ public class Contact {
         this.group = group;
     }
 
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass())
-            return false;
 
-        Contact cont = (Contact) obj;
-        return (getName() != null ? getName().equals(cont.getName()) : cont.getName() == null) &&
-                (getPhone() != null ? getPhone().equals(cont.getPhone()) : cont.getPhone() == null);
-
-    }
-    @Override
-public int hashCode () {
-int result =(getName() != null ? getName().hashCode() :0);
-result = 31 * result+(getPhone() != null ? getPhone().hashCode():0);
-return  result;
-    }
 }
